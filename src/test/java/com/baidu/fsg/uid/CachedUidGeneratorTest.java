@@ -26,12 +26,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 @ContextConfiguration(locations = { "classpath:uid/cached-uid-spring.xml" })
 public class CachedUidGeneratorTest {
     private static final int SIZE = 7000000; // 700w
+    private static final int PERFORMANCESIZE = 500000000; // 5亿
     private static final boolean VERBOSE = false;
     private static final int THREADS = Runtime.getRuntime().availableProcessors() << 1;
 
     @Resource
     private UidGenerator uidGenerator;
+    @Test
+    public void testSingleSerialGenerate() {
+        // Generate UID
+        long uid = uidGenerator.getUID();
 
+        // Parse UID into [Timestamp, WorkerId, Sequence]
+        // {"UID":"180363646902239241","parsed":{    "timestamp":"2017-01-19 12:15:46",    "workerId":"4",    "sequence":"9"        }}
+
+        String parsedInfo = uidGenerator.parseUID(uid);
+        System.out.println("parsedInfo============"+ parsedInfo);
+
+        Assert.assertTrue(StringUtils.isNotBlank(parsedInfo));
+
+    }
     /**
      * Test for serially generate
      * 
@@ -48,7 +62,43 @@ public class CachedUidGeneratorTest {
         // Check UIDs are all unique
         checkUniqueID(uidSet);
     }
+    /**
+     * Test for Performance parallel generate
+     *
+     * @throws InterruptedException
+     * @throws IOException
+     */
+    @Test
+    public void testPerformanceParallelGenerate() throws InterruptedException, IOException {
+        AtomicInteger control = new AtomicInteger(-1);
 
+        // Initialize threads
+        List<Thread> threadList = new ArrayList<>(THREADS);
+        for (int i = 0; i < THREADS; i++) {
+            Thread thread = new Thread(() -> {
+                for (;;) {
+                    int myPosition = control.updateAndGet(old -> (old == PERFORMANCESIZE ? PERFORMANCESIZE : old + 1));
+                    if (myPosition == PERFORMANCESIZE) {
+                        return;
+                    }
+
+                    uidGenerator.getUID();
+                }
+            });
+            thread.setName("UID-generator-" + i);
+
+            threadList.add(thread);
+            thread.start();
+        }
+
+        // Wait for worker done
+        for (Thread thread : threadList) {
+            thread.join();
+        }
+        // Check generate 5亿 times
+        Assert.assertEquals(PERFORMANCESIZE, control.get());
+
+    }
     /**
      * Test for parallel generate
      * 
