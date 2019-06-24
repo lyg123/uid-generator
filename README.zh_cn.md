@@ -139,7 +139,7 @@ PRIMARY KEY(ID)
     <property name="epochStr" value="2016-09-20"/>
  
     <!-- RingBuffer size扩容参数, 可提高UID生成的吞吐量. -->
-    <!-- 默认:3， 原bufferSize=8192, 扩容后bufferSize= 8192 << 3 = 65536 -->
+    <!-- 默认:3， 原bufferSize= 2^13 = 8192, 扩容后bufferSize= 8192 * 2^3 = 65536 -->
     <property name="boostPower" value="3"></property>
  
     <!-- 指定何时向RingBuffer中填充UID, 取值为百分比(0, 100), 默认为50 -->
