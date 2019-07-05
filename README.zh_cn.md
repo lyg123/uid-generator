@@ -306,6 +306,11 @@ seq 4位 为16
 
 2位随机数+后两段ip生成workid代码如下
 ```java
+import com.baidu.fsg.uid.worker.WorkerIdAssigner;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Random;
+
 public class IpRandomWorkIdAssigner implements WorkerIdAssigner {  
   
     private static final Random RANDOM = new Random();  
