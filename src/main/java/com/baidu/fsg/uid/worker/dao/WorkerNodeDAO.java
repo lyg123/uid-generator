@@ -16,7 +16,8 @@
 package com.baidu.fsg.uid.worker.dao;
 
 import com.baidu.fsg.uid.worker.entity.WorkerNodeEntity;
-import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -26,21 +27,13 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface WorkerNodeDAO {
-
-    /**
-     * Get {@link WorkerNodeEntity} by node host
-     * 
-     * @param host
-     * @param port
-     * @return
-     */
-    WorkerNodeEntity getWorkerNodeByHostPort(@Param("host") String host, @Param("port") String port);
-
     /**
      * Add {@link WorkerNodeEntity}
      * 
      * @param workerNodeEntity
      */
+    @Insert("INSERT INTO WORKER_NODE(HOST_NAME,PORT,TYPE,LAUNCH_DATE,MODIFIED,CREATED)VALUES (#{hostName},#{port},#{type},#{launchDate},NOW(),NOW())")
+    @Options(useGeneratedKeys = true, keyColumn = "id")
     void addWorkerNode(WorkerNodeEntity workerNodeEntity);
 
 }
